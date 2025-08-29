@@ -1,0 +1,398 @@
+---
+title: "Analysis of Violent Crime Rate"
+author: 
+ - - Kaustav Paul
+ - - Ananyo Dey
+ - - Shreya Chatterjee      
+ -  Supervisor - Dr. Soham Sarkar  
+
+
+date: "10-11-2023" 
+output: ioslides_presentation
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Introduction to the data
+
+The data combines socio-economic data from the 1990 US Census, law enforcement data from the 1990 US LEMAS survey, and crime data from the 1995 FBI UCR. It contains information regarding violent crimes committed in 1955 US states.
+
+This study was conducted to get an idea of various socio-economic parameters that influence violent crimes while launching Anti-crime squads in various places of USA. We have also done a similar study in our project.
+
+## About the Data
+
+We have collected our data from:
+
+https://archive.ics.uci.edu/dataset/183/communities+and+crime
+
+The original data consists of 122 predictive, 5 non-predictive along with a target variable. However, many covariates had missing values and some were also redundant. We have sieved out 25 covariates. The data is collected from 1955 USA States.
+
+ ***ViolentCrimesPerPop*** - Our response variable: Total number of violent crimes per 100k population.
+```{r warning=FALSE, include=FALSE}
+rm(list = ls())
+df <- read.csv("C:/Users/Ril/Desktop/Datas/Soham/linear_model_project/crimedata.csv")[1:1955,]
+attach(df)
+model <- lm(ViolentCrimesPerPop ~. , data = df)
+summary(model)
+library(lattice)
+
+data_full <- read.csv("C:/Users/Ril/Desktop/Datas/Soham/linear_model_project/Projectlm.csv")[1:1955,]
+attach(data_full)
+
+#considering no of homeless on street
+df <- cbind(df, X..NumStreet..)
+model1 <- lm(ViolentCrimesPerPop ~. , data = df)
+  
+#considering no of homeless on shelter
+df <- cbind(df, X..NumInShelters..)
+model2 <- lm(ViolentCrimesPerPop ~ ., data = df)
+  
+
+#removing TotalPctDiv
+remove <- c("TotalPctDiv", "agePct12t21", "agePct16t24")
+df.remove <- df[, ! names(df) %in% remove, drop = F]
+
+# df.remove$PctNotHSGrad <- PctNotHSGrad - PctLess9thGrade
+# df.remove$PctWorkMom <- df.remove$PctWorkMom - df.remove$PctWorkMomYoungKids
+
+model3 <- lm(ViolentCrimesPerPop ~ ., data = df.remove)
+
+library(dplyr)
+```
+
+```{css, echo=FALSE}
+pre {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 500px;
+}
+```
+
+```{css, echo=FALSE}
+.scroll-100 {
+  max-height: 500px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+```
+## About the covariates:
+
+We have the following covariates in our data:
+
+- population: population for community: (numeric - decimal)
+- householdsize: mean people per household (numeric - decimal)
+- racepctblack: percentage of population that is african american (numeric - decimal)
+- racePctWhite: percentage of population that is caucasian (numeric - decimal)
+- racePctAsian: percentage of population that is of asian heritage (numeric - decimal)
+- racePctHisp: percentage of population that is of hispanic heritage (numeric - decimal)
+
+## About the covariates:
+
+- agePct12t21: percentage of population that is 12-21 in age (numeric - decimal)
+- agePct65up: percentage of population that is 65 and over in age (numeric - decimal)
+- pctUrban: percentage of people living in areas classified as urban (numeric - decimal)
+- perCapInc: per capita income (numeric - decimal)
+- PctPopUnderPov: percentage of people under the poverty level (numeric - decimal)
+- PctLess9thGrade: percentage of people 25 and over with less than a 9th grade education (numeric - decimal)
+- PctNotHSGrad: percentage of people 25 and over that are not high school graduates (numeric - decimal)
+
+## About the covariates:
+
+- PctBSorMore: percentage of people 25 and over with a bachelors degree or higher education (numeric - decimal)
+- PctUnemployed: percentage of people 16 and over, in the labor force, and unemployed (numeric - decimal)
+- MalePctDivorce: percentage of males who are divorced (numeric - decimal)
+- FemalePctDiv: percentage of females who are divorced (numeric - decimal)
+- PctWorkMomYoungKids: percentage of moms of kids 6 and under in labor force (numeric - decimal)
+- PctWorkMom: percentage of moms of kids under 18 in labor force (numeric - decimal)
+
+## About the covariates:
+
+- PctIlleg: percentage of kids born to never married (numeric - decimal)
+- PctImmigRecent: percentage of immigrants who immigrated within last 3 years (numeric - decimal)
+- PctImmigRec10: percentage of immigrants who immigrated within last 10 years (numeric - decimal)
+- PctPersDenseHous: percent of persons in dense housing (more than 1 person per room) (numeric - decimal)
+- NumInShelters: number of people in homeless shelters (numeric - decimal)
+- NumStreet: number of homeless people counted in the street (numeric - decimal)
+
+## A Glimpse of the Data {.smaller}
+```{r, echo = F, message=FALSE, warning=FALSE, paged.print=FALSE, class.output= "scroll-100"}
+glimpse(df.remove)
+```
+
+## Questions in hand!
+ 
+- Does race affect rate of violent crimes?
+- Does education play a significant role in committing crimes?
+- Are the effects of male and female divorce rate on violent crimes same?
+- Is there any age related effect on violent crimes?
+
+## Fitting the Full Model
+
+
+
+```{r, echo = F,  class.output= "scroll-100"}
+model3 <- lm(ViolentCrimesPerPop ~ ., data = df.remove)
+summary(model3)
+```
+
+# Some Important Observations
+
+
+## Percentage Urban Population affects Violent Crime rate significantly:
+
+Person living in urban areas are expected to have a sophisticated life style, which in generally influences crimes.
+
+From the summary table we see,
+
+```{r, echo = F}
+sum1 <- summary(model3)
+sum1$coefficients[10,]
+```
+So p-value being <0.05, we conclude that Urban population is significant at 5% level of significance.
+
+The fitted coefficient being positive we can conclude that, with increase in percentage of people living in urban areas, violent crime increases.
+
+
+## Percentage of people residing in dense areas affects Crime Rate significantly:
+
+```{r, echo = F}
+PctPersDenseHouscat <- cut(PctPersDenseHous, breaks = 3, labels = c("low", "medium", "high"))
+df.remove <- cbind(df.remove, PctPersDenseHouscat)
+
+bwplot(ViolentCrimesPerPop ~  PctPersDenseHouscat, data = df.remove, ylab = "ViolentCrimesPerPop", xlab = "PctPersDenseHous")
+
+```
+
+
+## Percentage of people residing in dense areas affects Crime Rate significantly:
+```{r, echo=F}
+sum1 <- summary(model3)
+sum1$coefficients[24,]
+```
+The p-value being  <0.05, we conclude that ***PctPersDenseHous*** affects violent crime rate significantly. 
+
+The fitted coefficient being positive we can conclude that, with increase in percentage of people living in dense housing, violent crime increases.
+
+## Number of homeless living in streets affects Violent Crime Rate significantly:
+
+```{r, echo=F}
+NuminStreet <- cut(df.remove$X..NumStreet.., breaks = 3, labels = c("low", "medium", "high"))
+df.remove <- cbind(df.remove, NuminStreet)
+bwplot(ViolentCrimesPerPop ~  NuminStreet, data = df.remove, ylab = "ViolentCrimesPerPop", xlab = "NuminStreet")
+
+```
+
+## Number of homeless living in streets affects Violent Crime Rate significantly:
+
+```{r, echo=F}
+sum1 <- summary(model3)
+sum1$coefficients[25,]
+```
+The p-value being  <0.05, we conclude that ***NumStreet*** affects violent crime rate significantly. 
+
+The fitted coefficient being positive we can conclude that, with increase in percentage homeless living in streets, violent crime increases.
+
+
+## Percentage of kids born to never married affects Violent Crime Rate significantly : 
+```{r, echo=F}
+Pctillegal <- cut(df.remove$PctIlleg, breaks = 3, labels = c("low", "medium", "high"))
+df.remove <- cbind(df.remove, Pctillegal)
+bwplot(ViolentCrimesPerPop ~  Pctillegal, data = df.remove, ylab = "ViolentCrimesPerPop", xlab = "PctIllegal")
+```
+
+## Percentage of kids born to never married affects Violent Crime Rate significantly :
+```{r, echo=F}
+sum1$coefficients[21,]
+```
+The p-value being  <0.05, we conclude that ***PctIlleg*** affects violent crime rate significantly. 
+
+The fitted coefficient being positive we can conclude that, with increase in percentage of kids born to never married, violent crime increases.
+
+
+# Answering Pre-determined Questions
+
+
+## Does race affect rate of violent crimes ?
+
+```{r,, echo=F}
+racepctblackcat <- cut(racepctblack, breaks = 3, labels = c("low", "medium", "high"))
+racePctWhitecat <- cut(racePctWhite, breaks = 3, labels = c("low", "medium", "high"))
+racePctAsiancat <- cut(racePctAsian, breaks = 3, labels = c("low", "medium", "high"))
+racePctHispcat <- cut(racePctHisp, breaks = 3, labels = c("low", "medium", "high"))
+
+
+df.remove <- cbind(df.remove, racePctWhitecat, racepctblackcat, racePctAsiancat, racePctHispcat)
+
+cat <- c(racepctblackcat, racePctWhitecat, racePctAsiancat, racePctHispcat)
+race <- rep(c("Black", "White", "Asian", "Hispanic"), each = 1955)
+
+df.plot <- data.frame(rep(ViolentCrimesPerPop, 4), cat, race)
+
+bwplot(rep.ViolentCrimesPerPop..4. ~  cat | race, data = df.plot, layout = c(4, 1), ylab = "ViolentCrimesPerPop")
+```
+
+## Does race affect rate of violent crimes ?
+
+### <b> Observations:</b>
+- With increase in Black population, median violent crime rate increases.
+- With increase in White population, median violent crime rate decreases.
+- With increase in Hispanic population, median violent crime rate increases.
+
+To test,
+$$ H_0: \beta_{asian} = \beta_{black} = \beta_{white} = \beta_{hispanic}$$
+
+
+
+
+
+## Does race affect rate of violent crimes ?
+
+The result of the test is given as below:
+
+```{r echo=F, message=FALSE, warning=FALSE}
+library(gmodels)
+mat1 <- matrix(0, nrow = 3, ncol = 26)
+mat1[, 4] = 1; mat1[1, 5] = -1
+mat1[2, 6] = -1; mat1[3, 7] = -1
+glh.test(model3, cm = mat1, d = rep(0, 3))
+```
+
+The p value of the test being  <0.05, we reject the null hypothesis at 5 % level of significance. 
+
+Thus race significantly affect violent crime rate. Quite Desired!
+
+
+## Does educational level play a significant role in committing crimes?
+
+```{r echo=F, message=FALSE, warning=FALSE}
+#education comparison
+
+eduless9th <- cut(PctLess9thGrade, breaks = 3, labels = c("low", "medium", "high"))
+edunotHSgrad <- cut(PctNotHSGrad, breaks = 3, labels = c("low", "medium", "high"))
+eduBscormore <- cut(PctBSorMore, breaks = 3, labels = c("low", "medium", "high"))
+
+#education comparison via boxplot
+
+edu <- c(eduless9th, edunotHSgrad, eduBscormore)
+type <- rep(c("Less than 9th", "Not 12th Grad", "More than Bachelors"), each = 1955)
+df.plot1 <- data.frame(rep(ViolentCrimesPerPop, 3), edu, type)
+
+bwplot(rep.ViolentCrimesPerPop..3. ~  edu | type, data = df.plot1, layout = c(3, 1), ylab = "ViolentCrimesPerPop")
+
+```
+
+
+## Does educational level play a significant role in committing crimes?
+### <b> Observations:</b>
+- With increase in number of people (over age 25) with education less than 9th grade, median violent crime rate increases.
+- With increase in number of people (over age 25) with education less than 12th grade, median violent crime rate increases.
+- With increase in number of people (over age 25) with at least Bachelors' degree, median violent crime rate decreases.
+
+To test, 
+$$ H_0: \beta_{less9th} = \beta_{less12th} = \beta_{morebachelors}$$
+
+## Does education play a significant role in committing crimes?
+
+The result of the test is given as below:
+
+```{r echo=F, message=FALSE, warning=FALSE}
+mat3 <- matrix(0, nrow = 2, ncol = 26)
+mat3[, 13] <- 1; mat3[1, 14] <- -1
+mat3[2, 15] <- -1
+
+glh.test(model3, cm = mat3, d = c(0, 0))
+```
+
+The p value of the test being  <0.05, we reject the null hypothesis at 5 % level of significance. 
+
+Thus education level significantly affect violent crime rate. 
+
+
+## Are the effects of male and female divorce rate on violent crimes same?
+
+```{r, echo=F}
+#divorced female male
+
+malediv <- cut(MalePctDivorce, breaks = 3, labels = c("low","medium","high"))
+famlediv <- cut(FemalePctDiv, breaks = 3, labels = c("low", "medium", "high"))
+
+#divorced 
+
+gendiv <- c(malediv, famlediv)
+gen <- rep(c("Male" , "Female"), each=1955)
+df.plot2 <- data.frame(rep(ViolentCrimesPerPop, 2), gendiv, gen)
+
+bwplot(rep.ViolentCrimesPerPop..2. ~  gendiv | gen, data = df.plot2, layout = c(2, 1), ylab = "ViolentCrimesPerPop")
+
+```
+
+
+## Are the effects of male and female divorce rate on violent crimes same?
+
+To test, 
+$$ H_0: \beta_{malediv} = \beta_{femalediv}$$
+
+The result of the test is given as below:
+
+```{r echo=F, message=FALSE, warning=FALSE}
+mat2 <- matrix(0, nrow = 1, ncol = 26)
+mat2[1, 17] <- 1; mat2[1, 18] <- -1
+
+glh.test(model3, cm = mat2, d = c(0))
+```
+
+The p value of the test being  <0.05, we reject the null hypothesis at 5% level of significance. Thus the effects of male and female divorce rate on violent crime differ significantly. 
+
+
+
+## Does age distribution affect crime rate?
+
+```{r, echo=F}
+age12t29 <- cut(agePct12t29, breaks = 3, labels = c("low", "medium", "high"))
+age65up <- cut(agePct65up, breaks = 3, labels = c("low", "medium", "high"))
+
+#age comparison via boxplot
+
+agenum <- c(age12t29, age65up)
+age <- rep(c("Age 12 to 29", "Above 65"),each=1955)
+
+df.plot3 <- data.frame(rep(ViolentCrimesPerPop, 2), agenum, age)
+
+bwplot(rep.ViolentCrimesPerPop..2. ~  agenum | age, data = df.plot3, ylab = "Violent Crimes Per Population")
+
+```
+
+## Does age distribution affect crime rate?
+
+To test, 
+$$ H_0: \beta_{age12t29} = \beta_{age65up}$$
+
+The result of the test is given as below:
+
+```{r echo=F, message=FALSE, warning=FALSE}
+mat4 <- matrix(0, nrow = 1, ncol = 26)
+mat4[1, 8] <- 1; mat2[1, 9] <- -1
+
+glh.test(model3, cm = mat4, d = c(0))
+```
+
+The p value of the test being  >0.05, we accept the null hypothesis at 5% level of significance. Thus the effects of age on violent crime does not differ significantly. 
+
+
+## Summary
+
+- Percentage Urban Population, number of homeless people, number of illegal births have positive effects on Violent Crime Rate.
+
+- Race discrimination poses a significant influence on crime rate, with percentage black and percentage white having positive and negative effects respectively.
+
+- Education level also affects crime rate and states with more proportion of people with higher education level have lower crime rate.
+
+- With increase in divorce rate crime rate increases. However the rate of increase for male divorce and female divorce are not same.
+
+# Thank you! 
